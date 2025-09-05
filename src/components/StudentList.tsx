@@ -66,7 +66,7 @@ export const StudentList: React.FC<StudentListProps> = ({
                 {activeStudents.map(student => (
                   <div
                     key={student.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors space-y-2 sm:space-y-0"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">

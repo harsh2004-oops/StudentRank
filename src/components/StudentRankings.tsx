@@ -123,7 +123,7 @@ export const StudentRankings: React.FC<StudentRankingsProps> = ({
             return (
               <div
                 key={stats.studentId}
-                className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors space-y-4 sm:space-y-0"
               >
                 <div className={`w-16 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-lg ${getRankColor(overallRank)}`}>
                   <span>#{overallRank}</span>
@@ -153,7 +153,7 @@ export const StudentRankings: React.FC<StudentRankingsProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                   <div className="text-right">
                     <div className="text-sm text-gray-600">Batch Rank</div>
                     <div className="text-lg font-bold text-blue-600">

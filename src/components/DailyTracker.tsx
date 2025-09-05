@@ -158,14 +158,14 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
             return (
               <div
                 key={student.id}
-                className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors space-y-4 sm:space-y-0"
               >
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-800">{student.name}</h3>
                   <p className="text-sm text-gray-500">{student.class}</p>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">Attendance:</span>
                     <button
