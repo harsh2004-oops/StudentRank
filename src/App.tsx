@@ -19,7 +19,7 @@ function App() {
   const [showStudentForm, setShowStudentForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | undefined>();
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
-  const [selectedBatch, setSelectedBatch] = useState<string>('all');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -128,7 +128,7 @@ function App() {
               </div>
             </div>
             
-            <nav className="flex flex-wrap space-x-1">
+            <nav className="hidden sm:flex sm:space-x-1">
               {tabs.map(tab => {
                 const Icon = tab.icon;
                 return (
@@ -147,6 +147,18 @@ function App() {
                 );
               })}
             </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="sm:hidden">
+              <button
+                onClick={() => {
+                  // To be implemented: toggle mobile menu
+                }}
+                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <BarChart3 className="w-6 h-6" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
