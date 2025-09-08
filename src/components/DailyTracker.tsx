@@ -23,7 +23,6 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    // Load data for selected date
     const data: {[key: string]: { attendance: boolean; homework: boolean }} = {};
     
     students.filter(s => s.isActive).forEach(student => {
@@ -76,7 +75,6 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
       const student = students.find(s => s.id === studentId);
       if (!student || !student.isActive) return;
 
-      // Update attendance
       const attIndex = newAttendanceRecords.findIndex(r => r.studentId === studentId && r.date === selectedDate);
       if (attIndex > -1) {
         newAttendanceRecords[attIndex] = { ...newAttendanceRecords[attIndex], isPresent: data.attendance };
@@ -84,7 +82,6 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
         newAttendanceRecords.push({ id: `att_${studentId}_${selectedDate}`, studentId, date: selectedDate, isPresent: data.attendance, month });
       }
 
-      // Update homework
       const hwIndex = newHomeworkRecords.findIndex(r => r.studentId === studentId && r.date === selectedDate);
       if (hwIndex > -1) {
         newHomeworkRecords[hwIndex] = { ...newHomeworkRecords[hwIndex], isCompleted: data.homework };
@@ -112,23 +109,23 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
   const activeStudents = students.filter(s => s.isActive);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-blue-600" />
-          <h2 className="text-xl font-bold text-gray-800">Daily Tracker</h2>
+          <h2 className="text-xl font-bold text-gray-800 whitespace-nowrap">Daily Tracker</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <button
             onClick={handleSave}
             disabled={!hasChanges}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4" />
             Save
@@ -151,13 +148,13 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
                 key={student.id}
                 className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <h3 className="font-medium text-gray-800">{student.name}</h3>
                   <p className="text-sm text-gray-500">{student.class}</p>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-6">
-                  <div className="flex items-center gap-2">
+                <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-6">
+                  <div className="flex items-center justify-between w-full">
                     <span className="text-sm font-medium text-gray-700">Attendance:</span>
                     <button
                       onClick={() => handleAttendanceToggle(student.id)}
@@ -181,7 +178,7 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between w-full">
                     <span className="text-sm font-medium text-gray-700">Homework:</span>
                     <button
                       onClick={() => handleHomeworkToggle(student.id)}
@@ -207,7 +204,7 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
 
                   <button
                     onClick={() => sendDailyReport(student)}
-                    className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                     title="Send daily report to parent"
                   >
                     <Send className="w-4 h-4" />
