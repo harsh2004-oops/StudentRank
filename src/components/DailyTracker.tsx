@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Student, AttendanceRecord, HomeworkRecord } from '../types';
-import { Calendar, Users, Send, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Users, Send, CheckCircle, XCircle, Save } from 'lucide-react';
 import { sendToWhatsApp, generateDailyMessage } from '../utils/whatsapp';
-import { getCurrentMonth } from '../utils/calculations';
 
 interface DailyTrackerProps {
   students: Student[];
@@ -21,6 +20,7 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
 }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyData, setDailyData] = useState<{[key: string]: { attendance: boolean; homework: boolean }}>({});
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     // Load data for selected date
@@ -41,80 +41,61 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
     });
     
     setDailyData(data);
+    setHasChanges(false);
   }, [selectedDate, students, attendanceRecords, homeworkRecords]);
 
   const handleAttendanceToggle = (studentId: string) => {
-    const newData = {
-      ...dailyData,
+    setDailyData(prevData => ({
+      ...prevData,
       [studentId]: {
-        ...dailyData[studentId],
-        attendance: !dailyData[studentId]?.attendance
+        ...prevData[studentId],
+        attendance: !prevData[studentId]?.attendance
       }
-    };
-    setDailyData(newData);
-
-    // Update records
-    const month = selectedDate.slice(0, 7);
-    const existingRecord = attendanceRecords.find(
-      r => r.studentId === studentId && r.date === selectedDate
-    );
-
-    let newRecords: AttendanceRecord[];
-    if (existingRecord) {
-      newRecords = attendanceRecords.map(r =>
-        r.id === existingRecord.id 
-          ? { ...r, isPresent: newData[studentId].attendance }
-          : r
-      );
-    } else {
-      const newRecord: AttendanceRecord = {
-        id: `att_${studentId}_${selectedDate}`,
-        studentId,
-        date: selectedDate,
-        isPresent: newData[studentId].attendance,
-        month
-      };
-      newRecords = [...attendanceRecords, newRecord];
-    }
-    
-    onUpdateAttendance(newRecords);
+    }));
+    setHasChanges(true);
   };
 
   const handleHomeworkToggle = (studentId: string) => {
-    const newData = {
-      ...dailyData,
+    setDailyData(prevData => ({
+      ...prevData,
       [studentId]: {
-        ...dailyData[studentId],
-        homework: !dailyData[studentId]?.homework
+        ...prevData[studentId],
+        homework: !prevData[studentId]?.homework
       }
-    };
-    setDailyData(newData);
+    }));
+    setHasChanges(true);
+  };
 
-    // Update records
+  const handleSave = () => {
     const month = selectedDate.slice(0, 7);
-    const existingRecord = homeworkRecords.find(
-      r => r.studentId === studentId && r.date === selectedDate
-    );
+    let newAttendanceRecords: AttendanceRecord[] = [...attendanceRecords];
+    let newHomeworkRecords: HomeworkRecord[] = [...homeworkRecords];
 
-    let newRecords: HomeworkRecord[];
-    if (existingRecord) {
-      newRecords = homeworkRecords.map(r =>
-        r.id === existingRecord.id 
-          ? { ...r, isCompleted: newData[studentId].homework }
-          : r
-      );
-    } else {
-      const newRecord: HomeworkRecord = {
-        id: `hw_${studentId}_${selectedDate}`,
-        studentId,
-        date: selectedDate,
-        isCompleted: newData[studentId].homework,
-        month
-      };
-      newRecords = [...homeworkRecords, newRecord];
-    }
-    
-    onUpdateHomework(newRecords);
+    Object.keys(dailyData).forEach(studentId => {
+      const data = dailyData[studentId];
+      const student = students.find(s => s.id === studentId);
+      if (!student || !student.isActive) return;
+
+      // Update attendance
+      const attIndex = newAttendanceRecords.findIndex(r => r.studentId === studentId && r.date === selectedDate);
+      if (attIndex > -1) {
+        newAttendanceRecords[attIndex] = { ...newAttendanceRecords[attIndex], isPresent: data.attendance };
+      } else {
+        newAttendanceRecords.push({ id: `att_${studentId}_${selectedDate}`, studentId, date: selectedDate, isPresent: data.attendance, month });
+      }
+
+      // Update homework
+      const hwIndex = newHomeworkRecords.findIndex(r => r.studentId === studentId && r.date === selectedDate);
+      if (hwIndex > -1) {
+        newHomeworkRecords[hwIndex] = { ...newHomeworkRecords[hwIndex], isCompleted: data.homework };
+      } else {
+        newHomeworkRecords.push({ id: `hw_${studentId}_${selectedDate}`, studentId, date: selectedDate, isCompleted: data.homework, month });
+      }
+    });
+
+    onUpdateAttendance(newAttendanceRecords);
+    onUpdateHomework(newHomeworkRecords);
+    setHasChanges(false);
   };
 
   const sendDailyReport = (student: Student) => {
@@ -132,17 +113,27 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-blue-600" />
-          Daily Tracker
-        </h2>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
+          <h2 className="text-xl font-bold text-gray-800">Daily Tracker</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <Save className="w-4 h-4" />
+            Save
+          </button>
+        </div>
       </div>
 
       {activeStudents.length === 0 ? (
@@ -158,14 +149,14 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
             return (
               <div
                 key={student.id}
-                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors space-y-4 sm:space-y-0"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-800">{student.name}</h3>
                   <p className="text-sm text-gray-500">{student.class}</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6">
+                <div className="flex items-center gap-2 sm:gap-6">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">Attendance:</span>
                     <button
@@ -220,7 +211,7 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
                     title="Send daily report to parent"
                   >
                     <Send className="w-4 h-4" />
-                    Send Report
+                    Send
                   </button>
                 </div>
               </div>
