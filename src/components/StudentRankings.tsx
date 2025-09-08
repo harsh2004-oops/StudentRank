@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Student, StudentStats } from '../types';
 import { Trophy, Users, Send, TrendingUp, Calendar, Filter } from 'lucide-react';
 import { sendToWhatsApp, generateMonthlyMessage } from '../utils/whatsapp';
@@ -27,8 +27,6 @@ export const StudentRankings: React.FC<StudentRankingsProps> = ({
   selectedBatch,
   availableBatches,
   onBatchChange,
-  attendanceRecords,
-  homeworkRecords
 }) => {
   const sendMonthlyReport = (student: Student, stats: StudentStats) => {
     const overallRank = overallStudentStats.find(s => s.studentId === student.id)?.rank || 0;
@@ -62,19 +60,19 @@ export const StudentRankings: React.FC<StudentRankingsProps> = ({
   });
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 whitespace-nowrap">
           <Trophy className="w-5 h-5 text-yellow-600" />
           Student Rankings
         </h2>
-        <div className="flex items-center gap-4">
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-500" />
             <select
               value={selectedBatch}
               onChange={(e) => onBatchChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {availableBatches.map(batch => (
                 <option key={batch} value={batch}>
@@ -88,7 +86,7 @@ export const StudentRankings: React.FC<StudentRankingsProps> = ({
             <select
               value={selectedMonth}
               onChange={(e) => onMonthChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {availableMonths.map(month => {
                 const monthName = new Date(month + '-01').toLocaleDateString('en-IN', {
@@ -123,20 +121,28 @@ export const StudentRankings: React.FC<StudentRankingsProps> = ({
             return (
               <div
                 key={stats.studentId}
-                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors space-y-4 sm:space-y-0"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className={`w-16 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-lg ${getRankColor(overallRank)}`}>
+                <div className={`w-16 h-16 sm:h-12 rounded-lg flex flex-col items-center justify-center font-bold text-lg ${getRankColor(overallRank)}`}>
                   <span>#{overallRank}</span>
                   <span className="text-xs font-medium">Overall</span>
                 </div>
 
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-medium text-gray-800">{student.name}</h3>
-                    <span className="text-sm text-gray-500">({student.class} / {student.batch})</span>
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                    <div>
+                      <h3 className="font-medium text-gray-800">{student.name}</h3>
+                      <span className="text-sm text-gray-500">{student.class} / {student.batch}</span>
+                    </div>
+                    <div className="text-right mt-2 sm:mt-0">
+                      <div className="text-sm text-gray-600">Batch Rank</div>
+                      <div className="text-lg font-bold text-blue-600">
+                        #{stats.rank}
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <span className="text-gray-600">Attendance:</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPerformanceColor(stats.attendanceRate)}`}>
@@ -153,17 +159,10 @@ export const StudentRankings: React.FC<StudentRankingsProps> = ({
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-                  <div className="text-right">
-                    <div className="text-sm text-gray-600">Batch Rank</div>
-                    <div className="text-lg font-bold text-blue-600">
-                      #{stats.rank}
-                    </div>
-                  </div>
-                  
+                <div className="w-full sm:w-auto mt-4 sm:mt-0">
                   <button
                     onClick={() => sendMonthlyReport(student, stats)}
-                    className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                     title="Send monthly report to parent"
                   >
                     <Send className="w-4 h-4" />
