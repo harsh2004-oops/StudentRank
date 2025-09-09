@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Student, AttendanceRecord, HomeworkRecord } from '../types';
-import { Calendar, Users, Send, CheckCircle, XCircle, Save } from 'lucide-react';
+import { Calendar, Users, Send, CheckCircle, XCircle, Save, Filter } from 'lucide-react';
 import { sendToWhatsApp, generateDailyMessage } from '../utils/whatsapp';
 
 interface DailyTrackerProps {
@@ -9,6 +9,9 @@ interface DailyTrackerProps {
   homeworkRecords: HomeworkRecord[];
   onUpdateAttendance: (records: AttendanceRecord[]) => void;
   onUpdateHomework: (records: HomeworkRecord[]) => void;
+  selectedBatch: string;
+  availableBatches: string[];
+  onBatchChange: (batch: string) => void;
 }
 
 export const DailyTracker: React.FC<DailyTrackerProps> = ({
@@ -16,7 +19,10 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
   attendanceRecords,
   homeworkRecords,
   onUpdateAttendance,
-  onUpdateHomework
+  onUpdateHomework,
+  selectedBatch,
+  availableBatches,
+  onBatchChange,
 }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyData, setDailyData] = useState<{[key: string]: { attendance: boolean; homework: boolean }}>({});
@@ -106,7 +112,7 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
     sendToWhatsApp(student.parentPhone, message);
   };
 
-  const activeStudents = students.filter(s => s.isActive);
+  const activeStudents = students.filter(s => s.isActive && (selectedBatch === 'all' || s.batch === selectedBatch));
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
@@ -116,6 +122,20 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
           <h2 className="text-xl font-bold text-gray-800 whitespace-nowrap">Daily Tracker</h2>
         </div>
         <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <select
+              value={selectedBatch}
+              onChange={(e) => onBatchChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {availableBatches.map(batch => (
+                <option key={batch} value={batch}>
+                  {batch === 'all' ? 'All Batches' : batch}
+                </option>
+              ))}
+            </select>
+          </div>
           <input
             type="date"
             value={selectedDate}

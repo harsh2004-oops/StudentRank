@@ -304,6 +304,9 @@ function App() {
             homeworkRecords={homeworkRecords}
             onUpdateAttendance={handleUpdateAttendance}
             onUpdateHomework={handleUpdateHomework}
+            selectedBatch={selectedBatch}
+            availableBatches={availableBatches}
+            onBatchChange={setSelectedBatch}
           />
         )}
 
