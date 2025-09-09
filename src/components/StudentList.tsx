@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { Student } from '../types';
-import { Users, Edit, Trash2, UserPlus, Phone, Calendar } from 'lucide-react';
+import { Users, Edit, Trash2, UserPlus, Phone, Calendar, Filter } from 'lucide-react';
 
 interface StudentListProps {
   students: Student[];
   onEdit: (student: Student) => void;
   onDelete: (studentId: string) => void;
   onAdd: () => void;
+  selectedBatch: string;
+  availableBatches: string[];
+  onBatchChange: (batch: string) => void;
 }
 
 export const StudentList: React.FC<StudentListProps> = ({
   students,
   onEdit,
   onDelete,
-  onAdd
+  onAdd,
+  selectedBatch,
+  availableBatches,
+  onBatchChange,
 }) => {
   const [showConfirm, setShowConfirm] = useState<string | null>(null);
 
@@ -22,23 +28,40 @@ export const StudentList: React.FC<StudentListProps> = ({
     setShowConfirm(null);
   };
 
-  const activeStudents = students.filter(s => s.isActive);
-  const inactiveStudents = students.filter(s => !s.isActive);
+  const filteredStudents = students.filter(s => selectedBatch === 'all' || s.batch === selectedBatch);
+  const activeStudents = filteredStudents.filter(s => s.isActive);
+  const inactiveStudents = filteredStudents.filter(s => !s.isActive);
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
           <Users className="w-5 h-5 text-blue-600" />
-          Students ({students.length})
+          Students ({filteredStudents.length})
         </h2>
-        <button
-          onClick={onAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <UserPlus className="w-4 h-4" />
-          Add Student
-        </button>
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <select
+              value={selectedBatch}
+              onChange={(e) => onBatchChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {availableBatches.map(batch => (
+                <option key={batch} value={batch}>
+                  {batch === 'all' ? 'All Batches' : batch}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={onAdd}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add Student
+          </button>
+        </div>
       </div>
 
       {students.length === 0 ? (

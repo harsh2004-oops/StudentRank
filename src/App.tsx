@@ -294,6 +294,9 @@ function App() {
               setShowStudentForm(true);
             }}
             onDelete={handleDeleteStudent}
+            selectedBatch={selectedBatch}
+            availableBatches={availableBatches}
+            onBatchChange={setSelectedBatch}
           />
         )}
 
