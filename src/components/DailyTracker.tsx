@@ -71,7 +71,7 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
     setHasChanges(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const month = selectedDate.slice(0, 7);
     let newAttendanceRecords: AttendanceRecord[] = [...attendanceRecords];
     let newHomeworkRecords: HomeworkRecord[] = [...homeworkRecords];
@@ -96,8 +96,8 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
       }
     });
 
-    onUpdateAttendance(newAttendanceRecords);
-    onUpdateHomework(newHomeworkRecords);
+    await onUpdateAttendance(newAttendanceRecords);
+    await onUpdateHomework(newHomeworkRecords);
     setHasChanges(false);
   };
 

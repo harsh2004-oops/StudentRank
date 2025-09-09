@@ -1,52 +1,68 @@
+import { supabase } from '../supabaseClient';
 import { Student, AttendanceRecord, HomeworkRecord } from '../types';
 
 export const storage = {
   // Students
-  getStudents: (): Student[] => {
-    const students = localStorage.getItem('tuition_students');
-    return students ? JSON.parse(students) : [];
+  getStudents: async (): Promise<Student[]> => {
+    const { data, error } = await supabase.from('students').select('*');
+    if (error) {
+      console.error('Error fetching students:', error);
+      return [];
+    }
+    return data || [];
   },
 
-  setStudents: (students: Student[]): void => {
-    localStorage.setItem('tuition_students', JSON.stringify(students));
+  setStudents: async (students: Student[]): Promise<void> => {
+    const { error } = await supabase.from('students').upsert(students);
+    if (error) {
+      console.error('Error saving students:', error);
+    }
   },
 
   // Attendance Records
-  getAttendanceRecords: (): AttendanceRecord[] => {
-    const records = localStorage.getItem('tuition_attendance');
-    return records ? JSON.parse(records) : [];
+  getAttendanceRecords: async (): Promise<AttendanceRecord[]> => {
+    const { data, error } = await supabase.from('attendance').select('*');
+    if (error) {
+      console.error('Error fetching attendance records:', error);
+      return [];
+    }
+    return data || [];
   },
 
-  setAttendanceRecords: (records: AttendanceRecord[]): void => {
-    localStorage.setItem('tuition_attendance', JSON.stringify(records));
+  setAttendanceRecords: async (records: AttendanceRecord[]): Promise<void> => {
+    const { error } = await supabase.from('attendance').upsert(records);
+    if (error) {
+      console.error('Error saving attendance records:', error);
+    }
   },
 
   // Homework Records
-  getHomeworkRecords: (): HomeworkRecord[] => {
-    const records = localStorage.getItem('tuition_homework');
-    return records ? JSON.parse(records) : [];
+  getHomeworkRecords: async (): Promise<HomeworkRecord[]> => {
+    const { data, error } = await supabase.from('homework').select('*');
+    if (error) {
+      console.error('Error fetching homework records:', error);
+      return [];
+    }
+    return data || [];
   },
 
-  setHomeworkRecords: (records: HomeworkRecord[]): void => {
-    localStorage.setItem('tuition_homework', JSON.stringify(records));
+  setHomeworkRecords: async (records: HomeworkRecord[]): Promise<void> => {
+    const { error } = await supabase.from('homework').upsert(records);
+    if (error) {
+      console.error('Error saving homework records:', error);
+    }
   },
 
   // Clear all data
-  clearAllData: (): void => {
-    localStorage.removeItem('tuition_students');
-    localStorage.removeItem('tuition_attendance');
-    localStorage.removeItem('tuition_homework');
+  clearAllData: async (): Promise<void> => {
+    await supabase.from('students').delete().match({});
+    await supabase.from('attendance').delete().match({});
+    await supabase.from('homework').delete().match({});
   },
 
   // Clear data by month
-  clearMonthData: (month: string): void => {
-    const attendance = storage.getAttendanceRecords();
-    const homework = storage.getHomeworkRecords();
-    
-    const filteredAttendance = attendance.filter(record => record.month !== month);
-    const filteredHomework = homework.filter(record => record.month !== month);
-    
-    storage.setAttendanceRecords(filteredAttendance);
-    storage.setHomeworkRecords(filteredHomework);
+  clearMonthData: async (month: string): Promise<void> => {
+    await supabase.from('attendance').delete().eq('month', month);
+    await supabase.from('homework').delete().eq('month', month);
   }
 };

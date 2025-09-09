@@ -23,8 +23,8 @@ export const StudentList: React.FC<StudentListProps> = ({
 }) => {
   const [showConfirm, setShowConfirm] = useState<string | null>(null);
 
-  const handleDelete = (studentId: string) => {
-    onDelete(studentId);
+  const handleDelete = async (studentId: string) => {
+    await onDelete(studentId);
     setShowConfirm(null);
   };
 

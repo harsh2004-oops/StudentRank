@@ -20,14 +20,14 @@ export const DataManagement: React.FC<DataManagementProps> = ({
   const [showConfirm, setShowConfirm] = useState<string | null>(null);
   const availableMonths = getAvailableMonths(attendanceRecords, homeworkRecords);
 
-  const handleClearMonth = (month: string) => {
-    storage.clearMonthData(month);
+  const handleClearMonth = async (month: string) => {
+    await storage.clearMonthData(month);
     setShowConfirm(null);
     onDataUpdate();
   };
 
-  const handleClearAllData = () => {
-    storage.clearAllData();
+  const handleClearAllData = async () => {
+    await storage.clearAllData();
     setShowConfirm(null);
     onDataUpdate();
   };

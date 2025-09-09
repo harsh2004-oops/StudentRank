@@ -22,9 +22,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
     isActive: initialData?.isActive ?? true
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    await onSubmit(formData);
   };
 
   return (

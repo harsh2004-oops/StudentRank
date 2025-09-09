@@ -27,60 +27,60 @@ function App() {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setStudents(storage.getStudents());
-    setAttendanceRecords(storage.getAttendanceRecords());
-    setHomeworkRecords(storage.getHomeworkRecords());
+  const loadData = async () => {
+    setStudents(await storage.getStudents());
+    setAttendanceRecords(await storage.getAttendanceRecords());
+    setHomeworkRecords(await storage.getHomeworkRecords());
   };
 
-  const handleAddStudent = (studentData: Omit<Student, 'id'>) => {
+  const handleAddStudent = async (studentData: Omit<Student, 'id'>) => {
     const newStudent: Student = {
       ...studentData,
       id: `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
     
     const updatedStudents = [...students, newStudent];
+    await storage.setStudents(updatedStudents);
     setStudents(updatedStudents);
-    storage.setStudents(updatedStudents);
     setShowStudentForm(false);
   };
 
-  const handleEditStudent = (studentData: Omit<Student, 'id'>) => {
+  const handleEditStudent = async (studentData: Omit<Student, 'id'>) => {
     if (!editingStudent) return;
     
     const updatedStudents = students.map(s => 
       s.id === editingStudent.id ? { ...studentData, id: editingStudent.id } : s
     );
+    await storage.setStudents(updatedStudents);
     setStudents(updatedStudents);
-    storage.setStudents(updatedStudents);
     setEditingStudent(undefined);
     setShowStudentForm(false);
   };
 
-  const handleDeleteStudent = (studentId: string) => {
+  const handleDeleteStudent = async (studentId: string) => {
     // Remove student
     const updatedStudents = students.filter(s => s.id !== studentId);
+    await storage.setStudents(updatedStudents);
     setStudents(updatedStudents);
-    storage.setStudents(updatedStudents);
 
     // Remove related records
     const updatedAttendance = attendanceRecords.filter(r => r.studentId !== studentId);
     const updatedHomework = homeworkRecords.filter(r => r.studentId !== studentId);
     
+    await storage.setAttendanceRecords(updatedAttendance);
+    await storage.setHomeworkRecords(updatedHomework);
     setAttendanceRecords(updatedAttendance);
     setHomeworkRecords(updatedHomework);
-    storage.setAttendanceRecords(updatedAttendance);
-    storage.setHomeworkRecords(updatedHomework);
   };
 
-  const handleUpdateAttendance = (records: AttendanceRecord[]) => {
+  const handleUpdateAttendance = async (records: AttendanceRecord[]) => {
+    await storage.setAttendanceRecords(records);
     setAttendanceRecords(records);
-    storage.setAttendanceRecords(records);
   };
 
-  const handleUpdateHomework = (records: HomeworkRecord[]) => {
+  const handleUpdateHomework = async (records: HomeworkRecord[]) => {
+    await storage.setHomeworkRecords(records);
     setHomeworkRecords(records);
-    storage.setHomeworkRecords(records);
   };
 
   // Calculate stats
