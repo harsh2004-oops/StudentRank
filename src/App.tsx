@@ -1,6 +1,6 @@
+import { supabase } from './supabaseClient';
 import React, { useState, useEffect } from 'react';
 import { Student, AttendanceRecord, HomeworkRecord, StudentStats } from './types';
-import { storage } from './utils/storage';
 import { calculateStudentStats, getCurrentMonth, getAvailableMonths, calculateOverallRank } from './utils/calculations';
 import { StudentForm } from './components/StudentForm';
 import { StudentList } from './components/StudentList';
@@ -28,58 +28,107 @@ function App() {
   }, []);
 
   const loadData = async () => {
-    setStudents(await storage.getStudents());
-    setAttendanceRecords(await storage.getAttendanceRecords());
-    setHomeworkRecords(await storage.getHomeworkRecords());
+    const { data, error } = await supabase.from('students').select('*');
+    if (error) {
+      console.error('Error fetching students:', error);
+    } else {
+      setStudents(data as Student[]);
+    }
+
+    const { data: attendanceData, error: attendanceError } = await supabase.from('attendance').select('*');
+    if (attendanceError) {
+      console.error('Error fetching attendance:', attendanceError);
+    } else {
+      setAttendanceRecords(attendanceData as AttendanceRecord[]);
+    }
+
+    const { data: homeworkData, error: homeworkError } = await supabase.from('homework').select('*');
+    if (homeworkError) {
+      console.error('Error fetching homework:', homeworkError);
+    } else {
+      setHomeworkRecords(homeworkData as HomeworkRecord[]);
+    }
   };
 
   const handleAddStudent = async (studentData: Omit<Student, 'id'>) => {
-    const newStudent: Student = {
-      ...studentData,
-      id: `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    };
-    
+    const { data, error } = await supabase.from('students').insert([studentData]).select();
+    if (error) {
+      console.error('Error adding student:', error);
+      return;
+    }
+    if (!data) {
+      console.error('No data returned after adding student');
+      return;
+    }
+    const newStudent = data[0] as Student;
     const updatedStudents = [...students, newStudent];
-    await storage.setStudents(updatedStudents);
     setStudents(updatedStudents);
     setShowStudentForm(false);
   };
 
   const handleEditStudent = async (studentData: Omit<Student, 'id'>) => {
     if (!editingStudent) return;
-    
+
+    const { data, error } = await supabase
+      .from('students')
+      .update(studentData)
+      .match({ id: editingStudent.id })
+      .select();
+
+    if (error) {
+      console.error('Error updating student:', error);
+      return;
+    }
+
+    if (!data) {
+      console.error('No data returned after updating student');
+      return;
+    }
+
+    const updatedStudent = data[0] as Student;
+
     const updatedStudents = students.map(s => 
-      s.id === editingStudent.id ? { ...studentData, id: editingStudent.id } : s
+      s.id === editingStudent.id ? updatedStudent : s
     );
-    await storage.setStudents(updatedStudents);
     setStudents(updatedStudents);
     setEditingStudent(undefined);
     setShowStudentForm(false);
   };
 
   const handleDeleteStudent = async (studentId: string) => {
+    const { error } = await supabase.from('students').delete().match({ id: studentId });
+    if (error) {
+      console.error('Error deleting student:', error);
+      return;
+    }
+
     // Remove student
     const updatedStudents = students.filter(s => s.id !== studentId);
-    await storage.setStudents(updatedStudents);
     setStudents(updatedStudents);
 
     // Remove related records
     const updatedAttendance = attendanceRecords.filter(r => r.studentId !== studentId);
     const updatedHomework = homeworkRecords.filter(r => r.studentId !== studentId);
     
-    await storage.setAttendanceRecords(updatedAttendance);
-    await storage.setHomeworkRecords(updatedHomework);
     setAttendanceRecords(updatedAttendance);
     setHomeworkRecords(updatedHomework);
   };
 
   const handleUpdateAttendance = async (records: AttendanceRecord[]) => {
-    await storage.setAttendanceRecords(records);
+    const { error } = await supabase.from('attendance').upsert(records);
+    if (error) {
+      console.error('Error updating attendance:', error);
+      return;
+    }
     setAttendanceRecords(records);
   };
 
   const handleUpdateHomework = async (records: HomeworkRecord[]) => {
-    await storage.setHomeworkRecords(records);
+    const { error } = await supabase.from('homework').upsert(records);
+    if (error) {
+      console.error('Error updating homework:', error);
+      return;
+    }
     setHomeworkRecords(records);
   };
 
