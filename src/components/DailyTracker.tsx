@@ -73,31 +73,47 @@ export const DailyTracker: React.FC<DailyTrackerProps> = ({
 
   const handleSave = async () => {
     const month = selectedDate.slice(0, 7);
-    let newAttendanceRecords: AttendanceRecord[] = [...attendanceRecords];
-    let newHomeworkRecords: HomeworkRecord[] = [...homeworkRecords];
+    const attendanceToUpdate: AttendanceRecord[] = [];
+    const homeworkToUpdate: HomeworkRecord[] = [];
 
     Object.keys(dailyData).forEach(studentId => {
       const data = dailyData[studentId];
       const student = students.find(s => s.id === studentId);
       if (!student || !student.isActive) return;
 
-      const attIndex = newAttendanceRecords.findIndex(r => r.studentId === studentId && r.date === selectedDate);
-      if (attIndex > -1) {
-        newAttendanceRecords[attIndex] = { ...newAttendanceRecords[attIndex], isPresent: data.attendance };
-      } else {
-        newAttendanceRecords.push({ id: `att_${studentId}_${selectedDate}`, studentId, date: selectedDate, isPresent: data.attendance, month });
+      // Check for changes in attendance
+      const originalAtt = attendanceRecords.find(r => r.studentId === studentId && r.date === selectedDate);
+      const originalIsPresent = originalAtt?.isPresent || false;
+      if (originalIsPresent !== data.attendance) {
+        attendanceToUpdate.push({
+          id: originalAtt?.id || `att_${studentId}_${selectedDate}`,
+          studentId,
+          date: selectedDate,
+          isPresent: data.attendance,
+          month,
+        });
       }
 
-      const hwIndex = newHomeworkRecords.findIndex(r => r.studentId === studentId && r.date === selectedDate);
-      if (hwIndex > -1) {
-        newHomeworkRecords[hwIndex] = { ...newHomeworkRecords[hwIndex], isCompleted: data.homework };
-      } else {
-        newHomeworkRecords.push({ id: `hw_${studentId}_${selectedDate}`, studentId, date: selectedDate, isCompleted: data.homework, month });
+      // Check for changes in homework
+      const originalHw = homeworkRecords.find(r => r.studentId === studentId && r.date === selectedDate);
+      const originalIsCompleted = originalHw?.isCompleted || false;
+      if (originalIsCompleted !== data.homework) {
+        homeworkToUpdate.push({
+          id: originalHw?.id || `hw_${studentId}_${selectedDate}`,
+          studentId,
+          date: selectedDate,
+          isCompleted: data.homework,
+          month,
+        });
       }
     });
 
-    await onUpdateAttendance(newAttendanceRecords);
-    await onUpdateHomework(newHomeworkRecords);
+    if (attendanceToUpdate.length > 0) {
+      await onUpdateAttendance(attendanceToUpdate);
+    }
+    if (homeworkToUpdate.length > 0) {
+      await onUpdateHomework(homeworkToUpdate);
+    }
     setHasChanges(false);
   };
 

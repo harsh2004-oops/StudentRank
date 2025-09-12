@@ -114,22 +114,30 @@ function App() {
     setHomeworkRecords(updatedHomework);
   };
 
-  const handleUpdateAttendance = async (records: AttendanceRecord[]) => {
-    const { error } = await supabase.from('attendance').upsert(records);
+  const handleUpdateAttendance = async (updatedRecords: AttendanceRecord[]) => {
+    const { error } = await supabase.from('attendance').upsert(updatedRecords);
     if (error) {
       console.error('Error updating attendance:', error);
       return;
     }
-    setAttendanceRecords(records);
+    setAttendanceRecords(prevRecords => {
+      const recordsMap = new Map(prevRecords.map(r => [r.id, r]));
+      updatedRecords.forEach(r => recordsMap.set(r.id, r));
+      return Array.from(recordsMap.values());
+    });
   };
 
-  const handleUpdateHomework = async (records: HomeworkRecord[]) => {
-    const { error } = await supabase.from('homework').upsert(records);
+  const handleUpdateHomework = async (updatedRecords: HomeworkRecord[]) => {
+    const { error } = await supabase.from('homework').upsert(updatedRecords);
     if (error) {
       console.error('Error updating homework:', error);
       return;
     }
-    setHomeworkRecords(records);
+    setHomeworkRecords(prevRecords => {
+      const recordsMap = new Map(prevRecords.map(r => [r.id, r]));
+      updatedRecords.forEach(r => recordsMap.set(r.id, r));
+      return Array.from(recordsMap.values());
+    });
   };
 
   // Calculate stats
